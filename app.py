@@ -3,13 +3,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
+from flask import Flask, render_template, jsonify
+import numpy as np
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
 import time
+from pymongo import MongoClient
 from pymongo import MongoClient
 
 app = Flask(__name__)
 
-# client = MongoClient("localhost:27017")
-# db = client['database'] # mày thay tên database mình vào nha Nhân
+client = MongoClient("localhost:27017")
+collection = client.stock_predict.prediction
 
 def generate_plot(actual_prices, predicted_prices):
     plt.figure(figsize=(10, 6))
@@ -42,10 +48,10 @@ def index():
 
 @app.route('/update_plot')
 def update_plot():
-    days = np.arange(1, 31)
-    actual_prices = 100 + 2 * days + np.random.normal(0, 10, size=len(days))
-    predicted_prices = 110 + 2.1 * days + np.random.normal(0, 5, size=len(days)) 
-    
+    stock_data = [i for i in collection.find()]
+    predicted_prices = [item["prediction"] for item in stock_data]
+    actual_prices = [item["close"] for item in stock_data]
+
     graph = generate_plot(actual_prices, predicted_prices)
     return graph
 
